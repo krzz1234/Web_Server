@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock Research</title>
+    <script src="https://cdn.anychart.com/releases/8.10.0/js/anychart-base.min.js"></script>
+    <style type="text/css">
+      html, body, #container {
+        width: 80%; height: 80%; margin: 10; padding: 0;
+      }
+    </style>
+</head>
+<body>
+<h1>Stock Research</h1>
+
+<form action="" id="stock">
+    <p>Stock Symbol: <input type="text" name="stcksymbol" size="25"></p>
+</form>
+<p><button onclick="process()">Submit</button></p>
+
+<table>
+    <tr>
+        <td>Symbol:</td>
+        <td id="symbol"></td>
+    </tr>
+    <tr>
+        <td>Company Name:</td>
+        <td id="company"></td>
+    </tr>
+    <tr>
+        <td>PE Ratio:</td>
+        <td id="ratio"></td>
+    </tr>
+    <tr>
+        <td>Market Capitalization:</td>
+        <td id="market"></td>
+    </tr>
+    <tr>
+        <td>52 Week High:</td>
+        <td id="high"></td>
+    </tr>
+    <tr>
+        <td>52 Week Low:</td>
+        <td id="low"></td>
+    </tr>
+</table>
+
+<p id="demo"></p>
+<!-- Draw graph - if one already exists, new one will appear underneath -->
+<p><button onclick="process2()">Draw Graph</button></p>
+
+<div id="container"></div>
+
+</body>
+
+<script>
+    const date = [];
+    const close = [];
+
+
+    function process() {
+        const form = document.getElementById("stock");
+        const stcksymbol = form.elements["stcksymbol"].value;
+        document.getElementById("symbol").innerHTML = stcksymbol;
+
+        const uri = 'research?stcksymbol=' + stcksymbol;
+        const xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200){
+                const recvtext = xmlhttp.responseText;
+                const jdata = JSON.parse(recvtext);
+                document.getElementById("company").innerHTML = jdata.companyName;
+                document.getElementById("ratio").innerHTML = jdata.peRatio;
+                document.getElementById("market").innerHTML = jdata.marketcap;
+                document.getElementById("high").innerHTML = jdata.week52high;
+                document.getElementById("low").innerHTML = jdata.week52low;
+            }
+        };
+        xmlhttp.open("GET", uri, true);
+        xmlhttp.send();
+    }
+
+    function process2() {
+
+        const form = document.getElementById("stock");
+        const stcksymbol = form.elements["stcksymbol"].value;
+        document.getElementById("symbol").innerHTML = stcksymbol;
+
+        const uri = 'graph=' + stcksymbol;
+        const xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200){
+                const recvtext = xmlhttp.responseText;
+                const jdata = JSON.parse(recvtext);
+                for (i in jdata.graph) {
+                    date[i] = jdata.graph[i].date;
+                    close[i] = jdata.graph[i].close;
+                }
+                 anychart.onDocumentReady(function () {
+
+                  // create a data set on our data
+                  var dataSet = anychart.data.set(getData());
+
+
+                  // map data for the line chart,
+                  // take x from the zero column and value from the first column
+                  var seriesData = dataSet.mapAs({ x: 0, value: 1 });
+
+                  // create a line chart
+                  var chart = anychart.line();
+
+                  // create a line series with the mapped data
+                  var lineChart = chart.line(seriesData);
+
+                  // set the container id for the line chart
+                  chart.container('container');
+
+                  // draw the line chart
+                  chart.draw();
+
+                });
+
+                function getData() {
+                    const arr = []
+                    for (i=0; i<date.length; i++){
+                        arr[i] = [date[i],close[i]];
+                    }
+                  return arr;
+                }
+            }
+        };
+        xmlhttp.open("GET", uri, true);
+        xmlhttp.send();
+
+    }
+
+
+
+</script>
+</html>

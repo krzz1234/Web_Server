@@ -1,0 +1,12 @@
+<catalog>
+    <stock symbol="TSLA">
+        <quantity>100</quantity>
+        <price>1000</price>
+        <gainNloss>-20</gainNloss>
+    </stock>
+    <stock symbol="AAPL">
+        <quantity>100</quantity>
+        <price>86.39</price>
+        <gainNloss>12</gainNloss>
+    </stock>
+</catalog>
